@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shared-helm-chart.fullname" . }}
+  labels:
+    {{- include "shared-helm-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "shared-helm-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "shared-helm-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "shared-helm-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.service.enabled }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.livenessProbe.port }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}    
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}      
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.readinessProbe.port }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.startupProbe.path }}
+              port: {{ .Values.startupProbe.port }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            successThreshold: {{ .Values.startupProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          {{- if or (eq .Values.persistence.enabled true) .Values.mountedConfigs }}
+          volumeMounts:
+            {{- range .Values.mountedConfigs }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- if .Values.persistence.enabled }}
+            {{- range .Values.persistence.claims }}
+            - name: "{{ include "shared-helm-chart.fullname" $ }}-{{ .name }}"
+              mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+      {{- if or (eq .Values.persistence.enabled true) .Values.mountedConfigs }}
+      volumes:
+        {{- range .Values.mountedConfigs }}
+        - name: {{ .name }}
+          configMap:
+            name: "{{ include "shared-helm-chart.fullname" $ }}-{{ .name }}"
+            items:            
+              {{- range .items }}
+              - key: {{ .key }}
+                path: {{ .path }}
+              {{- end }}
+        {{- end }}
+        {{- if .Values.persistence.enabled }}
+        {{- range .Values.persistence.claims}}
+        - name: "{{ include "shared-helm-chart.fullname" $ }}-{{ .name }}"
+          persistentVolumeClaim:
+            claimName: "{{ include "shared-helm-chart.fullname" $ }}-{{ .name }}"
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

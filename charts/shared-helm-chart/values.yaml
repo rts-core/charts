@@ -1,0 +1,163 @@
+# Default values for shared-helm-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+readinessProbe:
+  enabled: false
+  # Path for the readinessProbe to use httpGet as the readinessProbe handler
+  path: /healthz/ready
+  # Port number on which readinessProbe will be checked if httpGet is used as the readinessProbe handler
+  port: 8200
+  # When a probe fails, Kubernetes will try failureThreshold times before giving up
+  failureThreshold: 2
+  # Number of seconds after the container has started before probe initiates
+  initialDelaySeconds: 5
+  # How often (in seconds) to perform the probe
+  periodSeconds: 5
+  # Minimum consecutive successes for the probe to be considered successful after having failed
+  successThreshold: 1
+  # Number of seconds after which the probe times out.
+  timeoutSeconds: 3
+# Used to enable a livenessProbe for the pods
+livenessProbe:
+  enabled: false
+  # Path for the livenessProbe to use httpGet as the livenessProbe handler
+  path: "/v1/sys/health?standbyok=true"
+  # Port number on which livenessProbe will be checked if httpGet is used as the livenessProbe handler
+  port: 8200
+  # When a probe fails, Kubernetes will try failureThreshold times before giving up
+  failureThreshold: 2
+  # Number of seconds after the container has started before probe initiates
+  initialDelaySeconds: 60
+  # How often (in seconds) to perform the probe
+  periodSeconds: 5
+  # Minimum consecutive successes for the probe to be considered successful after having failed
+  successThreshold: 1
+  # Number of seconds after which the probe times out.
+  timeoutSeconds: 3    
+startupProbe:
+  enabled: false
+  # Path for the startupProbe to use httpGet as the startupProbe handler
+  path: "/v1/sys/health?standbyok=true"
+  # Port number on which startupProbe will be checked if httpGet is used as the startupProbe handler
+  port: 8200
+  # When a probe fails, Kubernetes will try failureThreshold times before giving up
+  failureThreshold: 2
+  # Number of seconds after the container has started before probe initiates
+  initialDelaySeconds: 60
+  # How often (in seconds) to perform the probe
+  periodSeconds: 5
+  # Minimum consecutive successes for the probe to be considered successful after having failed
+  successThreshold: 1
+  # Number of seconds after which the probe times out.
+  timeoutSeconds: 3    
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: "nginx-internal"
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.eandrcleaners.corp
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: example-tls-secret
+    #   issuerRef: 
+    #     name: nginx-ca-issuer
+    #     kind: ClusterIssuer
+    #   hosts:
+    #   - chart-example.eandrcleaners.corp
+    #   annotations: {}
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+persistence:
+  enabled: false
+  claims:
+    - size: 1Gi
+      name: storage
+      mountPath: "/"
+      storageClass: null
+      accessMode: ReadWriteOnce
+      annotations: {}
+
+# Static environment variables to pass to the deployment
+env: []
+
+mountedConfigs: []
+  # Example
+  # - name: mysql-config
+  #   mountPath: /etc/mysql/conf.d
+  #   items:
+  #     - key: "customConfig.properties"
+  #       path: custom-config.cnf
+  #   data: 
+  #     customConfig.properties: |
+  #       [mysqld]
+  #       innodb_rollback_on_timeout = 1
+  #   annotations: {}

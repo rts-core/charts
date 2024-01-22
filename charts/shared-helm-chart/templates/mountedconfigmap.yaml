@@ -1,0 +1,15 @@
+{{- range .Values.mountedConfigs }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "shared-helm-chart.fullname" $ }}-{{ .name }}"
+  labels:
+    {{- include "shared-helm-chart.labels" $ | nindent 4 }}
+  {{- if .annotations }}
+  annotations:
+    {{- toYaml .annotations | nindent 4 }}
+  {{- end}}
+data:
+    {{- toYaml .data | nindent 2 }}
+---
+{{- end }}
