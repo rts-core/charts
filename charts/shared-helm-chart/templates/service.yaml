@@ -8,10 +8,12 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.port }}
-      protocol: {{ .Values.service.protocol }}
-      name: http
+    {{- range .Values.service.ports }}
+    - port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol }}
+      name: {{ .name }}
+    {{- end }}
   selector:
     {{- include "shared-helm-chart.selectorLabels" . | nindent 4 }}
 {{- end }}
