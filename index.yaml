@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   shared-helm-chart:
   - apiVersion: v2
+    created: "2024-01-22T17:38:14.736089829Z"
+    description: A Helm chart for Kubernetes
+    digest: 30c887ff822e216b6c215ab014b33bfafb7c82dcea986514e8e7acadb0dabd61
+    name: shared-helm-chart
+    type: application
+    urls:
+    - https://github.com/rts-core/charts/releases/download/shared-helm-chart-1.1.1/shared-helm-chart-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
     created: "2024-01-22T17:21:25.515200206Z"
     description: A Helm chart for Kubernetes
     digest: 30aa5a59aa616e35809da84c7a36fb971deaaf3488d2e8f951c59d455447b743
@@ -28,4 +37,4 @@ entries:
     urls:
     - https://github.com/rts-core/charts/releases/download/shared-helm-chart-1.0.0/shared-helm-chart-1.0.0.tgz
     version: 1.0.0
-generated: "2024-01-22T17:21:25.515216487Z"
+generated: "2024-01-22T17:38:14.736109395Z"
